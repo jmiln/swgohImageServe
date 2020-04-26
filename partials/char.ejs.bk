@@ -1,0 +1,35 @@
+<td class="myChar">
+    <div class="collection-char collection-char-light-side">
+        <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t<%= char.unit.gear %>">
+            <img class="char-portrait-full-img" src="http://swgoh.gg/game-asset/u/<%= char.unit.defId %>/" height="160" width="160">
+            <div class="char-portrait-full-gear"></div>
+            <div class="star star1 <% if (char.unit.rarity < 1) {%>star-inactive<%}%> "></div>
+            <div class="star star2 <% if (char.unit.rarity < 2) {%>star-inactive<%}%> "></div>
+            <div class="star star3 <% if (char.unit.rarity < 3) {%>star-inactive<%}%> "></div>
+            <div class="star star4 <% if (char.unit.rarity < 4) {%>star-inactive<%}%> "></div>
+            <div class="star star5 <% if (char.unit.rarity < 5) {%>star-inactive<%}%> "></div>
+            <div class="star star6 <% if (char.unit.rarity < 6) {%>star-inactive<%}%> "></div>
+            <div class="star star7 <% if (char.unit.rarity < 7) {%>star-inactive<%}%> "></div>
+            <% if (char.unit.zetas > 0) { %>
+                <div class="char-portrait-full-zeta"><%= char.unit.zetas %></div>
+            <% }; %>
+            <div class="char-portrait-gear-eq">
+                <table>
+                    <tr>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 0)) {%>✔<%}%></td>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 3)) {%>✔<%}%></td>
+                    </tr>
+                    <tr>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 1)) {%>✔<%}%></td>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 4)) {%>✔<%}%></td>
+                    </tr>
+                    <tr>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 2)) {%>✔<%}%></td>
+                        <td class="character-gear-icon"><% if (char.unit.equipped.find(e => e.slot === 5)) {%>✔<%}%></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="char-portrait-full-level"><%= char.unit.level %></div>
+        </div>
+    </div>
+</td>

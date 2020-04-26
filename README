@@ -1,0 +1,11 @@
+Just a little side app to make images for the ;mycharacter command from SWGOHBot
+
+This grabs images from swgoh.gg the first time a request comes through, then uses the stored one after that
+
+GearIcons/ is the base images that go around the character's images
+imageOut/ is where all the ones that are created are stored.
+partials/, css/, and ejs/ are where the it's all put together to make em look correct
+
+In order to use this, you need to send a GET request to the IP that it's running on
+(Ex: http://localhost:3600/char/DARTHREVAN/7/85/13/3/2/dark)
+You can use an app like Postman to test this locally

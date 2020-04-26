@@ -1,0 +1,19 @@
+# Directories
+/node_modules/
+/wipCommands/
+/data/img/
+/swgoh
+/swgohAPI
+/imageOut/*
+
+# Specific Files
+config.js
+config.json
+settings.json
+package-lock.json
+
+# Commands
+/commands/boom.js
+/commands/test.js
+/commands/test2.js
+

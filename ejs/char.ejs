@@ -1,0 +1,263 @@
+<head>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .star {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 30px;
+            height: 110px;
+            color: #000;
+            z-index: 4;
+            transform-origin: center bottom;
+            background: center 0 transparent url(http://localhost:3600/star.png) no-repeat;
+            background-size: 100%
+        }
+        .star-inactive {
+            background-image: url(http://localhost:3600/star-inactive.png)
+        }
+        .star1 {
+            -webkit-transform: translateX(-50%) rotate(-60deg);
+            transform: translateX(-50%) rotate(-60deg)
+        }
+        .star2 {
+            -webkit-transform: translateX(-50%) rotate(-40deg);
+            transform: translateX(-50%) rotate(-40deg)
+        }
+        .star3 {
+            -webkit-transform: translateX(-50%) rotate(-20deg);
+            transform: translateX(-50%) rotate(-20deg)
+        }
+        .star4 {
+            -webkit-transform: translateX(-50%) rotate(0deg);
+            transform: translateX(-50%) rotate(0deg)
+        }
+        .star5 {
+            -webkit-transform: translateX(-50%) rotate(20deg);
+            transform: translateX(-50%) rotate(20deg)
+        }
+        .star6 {
+            -webkit-transform: translateX(-50%) rotate(40deg);
+            transform: translateX(-50%) rotate(40deg)
+        }
+        .star7 {
+            -webkit-transform: translateX(-50%) rotate(60deg);
+            transform: translateX(-50%) rotate(60deg)
+        }
+        .char-portrait-full-gear {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            z-index: 2;
+            top: 0;
+            left: 0
+        }
+        .char-portrait-full-gear-t1  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g1.svg) }
+        .char-portrait-full-gear-t2  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g2.svg) }
+        .char-portrait-full-gear-t3  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g3.svg) }
+        .char-portrait-full-gear-t4  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g4.svg) }
+        .char-portrait-full-gear-t5  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g5.svg) }
+        .char-portrait-full-gear-t6  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g6.svg) }
+        .char-portrait-full-gear-t7  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g7.svg) }
+        .char-portrait-full-gear-t8  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g8.svg) }
+        .char-portrait-full-gear-t9  .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g9.svg) }
+        .char-portrait-full-gear-t10 .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g10.svg)}
+        .char-portrait-full-gear-t11 .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g11.svg)}
+        .char-portrait-full-gear-t12 .char-portrait-full-gear { background-image: url(http://localhost:3600/gear-icon-g12.svg)}
+
+		.char-portrait-full-gear-t13 .char-portrait-full-gear {
+			background-image: url(http://localhost:3600/g13-frame-atlas.png);
+			width: 200px;
+			height: 200px;
+			background-size: 100%;
+			left: 50%;
+			top: 63%;
+			transform: translate(-50%, -50%);
+		}
+		.char-portrait-full-gear-t13.char-portrait-full-alignment-light-side .char-portrait-full-gear {
+			background-position: 0 -15
+		}
+		.char-portrait-full-gear-t13.char-portrait-full-alignment-dark-side .char-portrait-full-gear {
+			background-position: 0 -200
+		}
+
+        .char-portrait-full-relic,
+        .char-portrait-full-zeta {
+            position: absolute;
+            z-index: 4;
+            color: #fff;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700
+        }
+
+        .char-portrait-full-zeta {
+            background: 50% transparent url(http://localhost:3600/zeta.png) no-repeat;
+            background-size: contain;
+            width: 100px;
+            height: 80px;
+            top: 72px;
+            left: -28px;
+            line-height: 68px;
+        }
+
+        .char-portrait-full-relic {
+            background-image: url(http://localhost:3600/relic-badge-atlas.png);
+            background-size: 100%;
+            width: 80px;
+            height: 80px;
+            top: 72px;
+            right: -20px;
+            line-height: 76px;
+            text-shadow: -1px -1px 0 #000, 2px -1px 0 #000, 2px 2px 0 #000, -1px 2px 0 #000, 2px 3px 0 #000, 1px 3px 0 #000, 2px 3px 0 #000
+        }
+
+        .char-portrait-full-gear-t13.char-portrait-full-alignment-dark-side .char-portrait-full-relic {
+            background-position: 0 -100%
+        }
+
+        .char-portrait-full-gear-t13.char-portrait-full-alignment-light-side .char-portrait-full-relic {
+            background-position: 0 0
+        }
+
+
+        .character-image .star {
+            height: 55px
+        }
+
+        .character-image {
+            width: 160px;
+            height: 160px;
+            background: transparent 100% no-repeat;
+            background-size: cover;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            position: relative
+        }
+
+        .char-portrait-full-level {
+            bottom: -5px;
+            left: 50%;
+            z-index: 4;
+            width: 40px;
+            padding: 0 5px;
+            position: absolute;
+            -webkit-transform: translate(-50%);
+            transform: translate(-50%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 28;
+            background-color: #264257;
+            border: 4px solid #fff;
+            text-align: center;
+            border-radius: 100%/130% 120% 30px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,.5);
+            text-shadow: -1px -1px 0 #000, 2px -1px 0 #000, 2px 2px 0 #000, -1px 2px 0 #000, 1px 2px 0 #000, 1px 2px 0 #000, 1px 2px 0 #000;
+        }
+        .collection-char {
+            position: relative;
+            height: 328px;
+            padding: 10px 0;
+            overflow: hidden
+        }
+
+        .collection-char:after,.collection-char:before {
+            display: table;
+            content: "";
+            clear: both
+        }
+        .collection-char-name {
+            display: table;
+            min-height: 30px;
+            line-height: 1;
+            text-align: center;
+            font-weight: 700;
+            width: 100%
+        }
+
+        .collection-char-name-link {
+            color: #333;
+            display: table-cell;
+            vertical-align: top
+        }
+        .collection-char .player-char-portrait {
+            margin: 15px auto 10px;
+            box-shadow: 0 0 1px 2px #111
+        }
+
+        .collection-char .char-portrait {
+            margin: 15px auto 10px;
+            width: 160px;
+            display: block
+        }
+
+        .char-portrait {
+            background-color: #000;
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            vertical-align: top
+        }
+
+        .char-portrait-dark-side .char-portrait-image {
+            border-color: #b03233;
+            box-shadow: inset 0 0 3px 2px rgba(176,50,51,.8)
+        }
+
+        .char-portrait-light-side .char-portrait-image {
+            border-color: #3f8cba;
+            box-shadow: inset 0 0 3px 2px rgba(63,140,186,.8)
+        }
+        .char-portrait-full {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            background-color: #000;
+            box-shadow: 0 0 0 2px #555;
+            border-radius: 50%
+        }
+        .char-portrait-full-empty {
+            background-color: #ccc;
+            box-shadow: 0 0 0 2px #aaa
+        }
+
+        .char-portrait-full-img {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background-color: #000
+        }
+
+
+        .character-gear-icon {
+            width: 80px;
+            height: 80px
+        }
+
+        .char-portrait-gear-eq {
+            background-size: contain;
+            width: 100px;
+            height: 150px;
+            position: absolute;
+            top: 72px;
+            z-index: 4;
+            right: -55px;
+            bottom: 50px;
+        }
+        .character-gear-icon {
+            width: 20px;
+            height: 20px;
+            background-color: rgb(37, 36, 36);
+            border: 2px solid white;
+            border-radius: 30%;
+            color: white;
+            text-align: center;
+            font-size:15;
+            font-weight: bolder;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../partials/char', {char: char}); %>
+</body>

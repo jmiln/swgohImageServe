@@ -8,7 +8,7 @@
             <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t13 char-portrait-full-alignment-<% if (char.unit.side) { %><%= char.unit.side %><%};%>-side">
         <% }; %>
             <!-- Get the character's image from swgoh.gg -->
-            <img class="char-portrait-full-img" src="http://swgoh.gg/game-asset/u/<%= char.unit.defId %>/" height="160" width="160">
+            <img class="char-portrait-full-img" src="<%= char.unit.charUrl %>" height="160" width="160">
             <div class="char-portrait-full-gear"></div>
             <!-- Show the various star levels -->
             <div class="star star1 <% if (char.unit.rarity < 1) {%>star-inactive<%}%> "></div>

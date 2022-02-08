@@ -1,33 +1,35 @@
-<td class="myChar">
+<div class="myChar <% if (char.invalid) {%> invalid <%}%>">
     <div class="collection-char collection-char-light-side">
-        <% if (char.unit.gear < 13) { %>
+        <% if (char.gear < 13) { %>
             <!-- If the character is lower than g13, use the easy ones -->
-            <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t<%= char.unit.gear %>">
+            <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t<%= char.gear %>">
         <% } else { %>
             <!-- Otherwise, use the g13 one, based on the character's alignment -->
-            <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t13 char-portrait-full-alignment-<% if (char.unit.side) { %><%= char.unit.side %><%};%>-side">
+            <div class="player-char-portrait char-portrait-full char-portrait-full-gear-t13 char-portrait-full-alignment-<% if (char.side) {%><%= char.side %><%}%>-side">
         <% }; %>
             <!-- Get the character's image from swgoh.gg -->
-            <img class="char-portrait-full-img" src="<%= char.unit.charUrl %>" height="160" width="160">
+            <img class="char-portrait-full-img" src="<%= char.charUrl %>" height="160" width="160">
             <div class="char-portrait-full-gear"></div>
+
             <!-- Show the various star levels -->
-            <div class="star star1 <% if (char.unit.rarity < 1) {%>star-inactive<%}%> "></div>
-            <div class="star star2 <% if (char.unit.rarity < 2) {%>star-inactive<%}%> "></div>
-            <div class="star star3 <% if (char.unit.rarity < 3) {%>star-inactive<%}%> "></div>
-            <div class="star star4 <% if (char.unit.rarity < 4) {%>star-inactive<%}%> "></div>
-            <div class="star star5 <% if (char.unit.rarity < 5) {%>star-inactive<%}%> "></div>
-            <div class="star star6 <% if (char.unit.rarity < 6) {%>star-inactive<%}%> "></div>
-            <div class="star star7 <% if (char.unit.rarity < 7) {%>star-inactive<%}%> "></div>
-            <% if (char.unit.zetas > 0) { %>
+            <div class="star star1 <% if (char.rarity < 1) {%>star-inactive<%}%> "></div>
+            <div class="star star2 <% if (char.rarity < 2) {%>star-inactive<%}%> "></div>
+            <div class="star star3 <% if (char.rarity < 3) {%>star-inactive<%}%> "></div>
+            <div class="star star4 <% if (char.rarity < 4) {%>star-inactive<%}%> "></div>
+            <div class="star star5 <% if (char.rarity < 5) {%>star-inactive<%}%> "></div>
+            <div class="star star6 <% if (char.rarity < 6) {%>star-inactive<%}%> "></div>
+            <div class="star star7 <% if (char.rarity < 7) {%>star-inactive<%}%> "></div>
+            <% if (char.zetas > 0) { %>
                 <!-- If there are zetas on the character, show that with a count -->
-                <div class="char-portrait-full-zeta"><%= char.unit.zetas %></div>
+                <div class="char-portrait-full-zeta"><%= char.zetas %></div>
             <% }; %>
             <!-- Show the character's level -->
-            <div class="char-portrait-full-level"><%= char.unit.level %></div>
-            <% if (char.unit.gear >= 13) { %>
+            <div class="char-portrait-full-level"><%= char.level %></div>
+            <% if (char.gear >= 13) { %>
                 <!-- If the character is g13, show the relic badge -->
-                <div class="char-portrait-full-relic"><%= char.unit.relic %></div>
+                <div class="char-portrait-full-relic"><%= char.relic %></div>
             <% }; %>
         </div>
     </div>
-</td>
+    <div class="char-portrait-name"><%= char.name %></div>
+</div>

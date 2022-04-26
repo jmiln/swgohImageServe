@@ -24,11 +24,16 @@
                 <div class="char-portrait-full-zeta"><%= char.zetas %></div>
             <% }; %>
             <!-- Show the character's level -->
-            <div class="char-portrait-full-level"><%= char.level %></div>
-            <% if (char.gear >= 13) { %>
-                <!-- If the character is g13, show the relic badge -->
+            <% if (char.relic >= 1 && char.gear >= 13) { %>
+                <!-- If they have a relic level, show that badge in place of the lvl85 -->
                 <div class="char-portrait-full-relic"><%= char.relic %></div>
+            <% } else { %>
+                    <div class="char-portrait-full-level"><%= char.level %></div>
             <% }; %>
+            <!-- <% if (char.omicron > 0) { %> -->
+                <!-- If the character has an omicron ability, show that -->
+                <div class="char-portrait-full-omicron"><%= char.omicron %></div>
+            <!-- <% }; %> -->
         </div>
     </div>
     <div class="char-portrait-name"><%= char.name %></div>

@@ -16,7 +16,7 @@ const init = async function() {
     app.use(express.static(__dirname + "/GearIcons"));
 
     const relicTier = [0,0,0,1,2,3,4,5,6,7,8,9];
-    const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zeta: 0, relic: 0, side: ""};
+    const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zeta: 0, relic: 0, side: "", omicron: 0};
 
     app.post("/char", async (req, res) => {
         // Set the dimensions of the character image
@@ -29,6 +29,7 @@ const init = async function() {
             gear:    req.body.gear             || charDef.gear,
             zetas:   req.body.zetas            || charDef.zetas,
             relic:   relicTier[req.body.relic] || charDef.relic,
+            omicron: req.body.omicron          || charDef.omicron,
             side:    req.body.side             || charDef.side
         };
         const ssPath = __dirname + "/imageOut/" + Object.keys(charStats).filter(k => k !== "charUrl").map(k => charStats[k]).join("-") + ".png";

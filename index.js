@@ -115,7 +115,9 @@ const init = async function() {
         res.sendFile(ssPath);
     });
 
-    app.listen(config.port, () => {console.log("Express server listening");});
+    app.listen(config.port, () => {
+        console.log(`Express server listening on port ${config.port}`);
+    });
 };
 
 init();

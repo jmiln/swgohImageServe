@@ -80,6 +80,7 @@
 }
 
 .char-portrait-full-relic,
+.char-portrait-full-omicron,
 .char-portrait-full-zeta {
     position: absolute;
     z-index: 4;
@@ -95,17 +96,33 @@
 .char-portrait-full-zeta {
     background: 50% transparent url("/zeta.png") no-repeat;
     background-size: contain;
-    width: 100px;
+    width: 90px;
+    height: 76px;
+    top: 72px;
     left: -28px;
-    line-height: 68px;
+    line-height: 63px;
+}
+
+.char-portrait-full-omicron {
+    background: 50% transparent url("/omicron.png") no-repeat;
+    background-size: contain;
+    width: 100px;
+    height: 80px;
+    top: 72px;
+    right: -30px;
+    line-height: 63px;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, 1px 1px 0 #000, -1px 1px 0 #000, 1px 2px 0 #000, 1px 2px 0 #000, 1px 2px 0 #000
 }
 
 .char-portrait-full-relic {
     background-image: url("/relic-badge-atlas.png");
     background-size: 100%;
     width: 80px;
-    right: -20px;
+    height: 80px;
+    top: 100px;
+    right: 25%;
     line-height: 76px;
+    text-shadow: -1px -1px 0 #000, 2px -1px 0 #000, 2px 2px 0 #000, -1px 2px 0 #000, 2px 3px 0 #000, 1px 3px 0 #000, 2px 3px 0 #000
 }
 
 .char-portrait-full-gear-t13.char-portrait-full-alignment-dark-side .char-portrait-full-relic {
@@ -257,9 +274,6 @@
     text-align: center;
     font-size:15;
     font-weight: bolder;
-}
-body {
-    background-image: linear-gradient(#1A2E37, #1A506F);
 }
 #header, #footer {
     text-align: center;

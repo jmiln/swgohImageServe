@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+    <body>
+        <canvas id="testChart"></canvas>
+    </body>
+    <script>
+        let canvas = document.getElementById("testChart");
+        let ctx = canvas.getContext("2d");
+        let data = {
+            labels: <%- JSON.stringify(labels); %>,
+            datasets: <%- JSON.stringify(datasets); %>,
+        };
+
+        let chart = new Chart(ctx, {
+            type: "line",
+            data: data,
+            options: {
+                legend: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                animation: false
+            }
+        });
+    </script>
+</html>

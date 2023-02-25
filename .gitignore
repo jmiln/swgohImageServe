@@ -5,6 +5,7 @@
 /swgoh
 /swgohAPI
 /imageOut/*
+/cacheDir
 
 # Specific Files
 config.js

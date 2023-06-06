@@ -211,13 +211,23 @@ const init = async function() {
 async function checkImgOrDownload(url, dir) {
     const imgName = url.split("/").pop();
     const path = `${dir}/${imgName}`;
+
+    // TODO This needs to be gotten automatically so it can update, but this is the current version
+    const assetVersion = 3204;
+
     if (fs.existsSync(path)) {
         // If it exists, then just give the name
         return imgName;
     }
 
+    let assetUrl;
+    if (config.assetPort) {
+        const assetName = imgName.split(".")[1];    // Generally `tex.ASSET_NAME.png`, so grabbing just the name out
+        assetUrl  = `http://localhost:${config.assetPort}/Asset/single?forceReDownload=true&version=${assetVersion}&assetName=${assetName}`;
+    }
+
     // Otherwise, download & save the image, then give the name
-    const buffer = await fetch(url)
+    const buffer = await fetch(assetUrl || url)
         .then(async res => res.blob())
         .then(async res => res.arrayBuffer())
         .then(async res => Buffer.from(res));

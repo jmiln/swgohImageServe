@@ -213,7 +213,7 @@ async function checkImgOrDownload(url, dir) {
     const path = `${dir}/${imgName}`;
 
     // TODO This needs to be gotten automatically so it can update, but this is the current version
-    const assetVersion = 3204;
+    const assetVersion = 3206;
 
     if (fs.existsSync(path)) {
         // If it exists, then just give the name

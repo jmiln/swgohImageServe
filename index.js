@@ -49,6 +49,7 @@ const minimal_args = [
 const init = async function() {
     const browser = await puppeteer.launch({
         headless: true,
+        // headless: "new",
         args: minimal_args,
         userDataDir: "./cacheDir"
     });

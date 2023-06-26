@@ -45,6 +45,7 @@ const minimal_args = [
     "--use-mock-keychain",
 ];
 
+let metadataFile;
 
 const init = async function() {
     const browser = await puppeteer.launch({
@@ -63,6 +64,11 @@ const init = async function() {
 
     const relicTier = [0,0,0,1,2,3,4,5,6,7,8,9];
     const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zeta: 0, relic: 0, side: "", omicron: 0};
+
+    // Update the metadata file every hour so we can keep the assetVersion current
+    setInterval(async () => {
+        await updateMetaData();
+    }, 60 * 60 * 1000);
 
     app.post("/char", async (req, res) => {
         // Set the dimensions of the character image
@@ -214,7 +220,7 @@ async function checkImgOrDownload(url, dir) {
     const path = `${dir}/${imgName}`;
 
     // TODO This needs to be gotten automatically so it can update, but this is the current version
-    const assetVersion = 3206;
+    const assetVersion = metadataFile.assetVersion;
 
     if (fs.existsSync(path)) {
         // If it exists, then just give the name
@@ -234,6 +240,34 @@ async function checkImgOrDownload(url, dir) {
         .then(async res => Buffer.from(res));
     await fs.promises.writeFile(path, buffer);
     return imgName;
+}
+
+// Update the metadata file if it exists, create it otherwise
+const ComlinkStub = require("@swgoh-utils/comlink");
+const comlinkStub = new ComlinkStub(config.clientStub);
+const META_FILE = __dirname + "/data/metadata.json";
+const META_KEYS = ["assetVersion", "latestGamedataVersion", "latestLocalizationBundleVersion"];
+async function updateMetaData() {
+    const meta = await comlinkStub.getMetaData();
+    let metaFile = {};
+    if (fs.existsSync(META_FILE)) {
+        metaFile = JSON.parse(fs.readFileSync(META_FILE, "utf-8"));
+    }
+    let isUpdated = false;
+    const metaOut = {};
+    for (const key of META_KEYS) {
+        if (meta[key] !== metaFile[key]) {
+            isUpdated = true;
+        }
+        metaOut[key] = meta[key];
+    }
+
+    if (isUpdated) {
+        fs.writeFileSync(META_FILE, JSON.stringify(metaOut), {encoding: "utf8"});
+    }
+    metadataFile = metaOut;
+
+    return isUpdated;
 }
 
 init();

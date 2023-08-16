@@ -1,0 +1,9 @@
+<div class="tr">
+    <div class="td">
+        <img class="<%= ship.side === 'light' ? 'lSide' : 'dSide' %>" src="<%= ship.charUrl %>">
+    </div>
+    <div class="td tLeft <% if (!ship.valid) { %>invalid<% } %>"><% if (ship.required) { %>* <% } %><%= ship.name %></div>
+    <div class="td <% if (ship.gp < ship.gpReq) { %>invalid<% } %>"><%= ship.gp.toLocaleString() %></div>
+    <div class="td <% if (ship.rarity < ship.rarityReq) { %>invalid<% } %>"><%= ship.rarity %>/<%= ship.rarityReq %></div>
+    <div class="td <% if (!ship.valid) { %>invalid<% } %>"><% if (ship.valid) { %>✓<% } else { %>X<% } %></div>
+</div>

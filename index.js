@@ -66,6 +66,7 @@ const init = async function() {
     const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zeta: 0, relic: 0, side: "", omicron: 0};
 
     // Update the metadata file every hour so we can keep the assetVersion current
+    await updateMetaData();
     setInterval(async () => {
         await updateMetaData();
     }, 60 * 60 * 1000);
@@ -153,6 +154,81 @@ const init = async function() {
     //         res.send(Buffer.from(ssBuffer, "binary"));
     //     });
     // });
+
+    app.post("/panic", async (req, res) => {
+        const unitList = [];
+        const charListIn = req.body.units;
+        if (!charListIn?.length) return console.error("[panic] Missing character list");
+
+        if (!Array.isArray(charListIn)) return console.error("[panic] Character list is not an array");
+        for (const thisChar of charListIn) {
+            unitList.push({
+                defId:   thisChar.defId,
+                charUrl: `http://localhost:${config.port}/CharIcons/` + await checkImgOrDownload(thisChar.charUrl, "./public/CharIcons"),
+                name:    thisChar?.name,
+                rarity:  thisChar.rarity           || charDef.rarity,
+                gear:    thisChar.gear             || charDef.gear,
+                relic:   relicTier[thisChar.relic] || charDef.relic,
+                side:    thisChar.side             || charDef.side,
+                gp:      thisChar.gp               || "N/A",
+
+                // The required tiers that a character needs to get past
+                gpReq:   thisChar.gpReq            || 0,
+                rarityReq: thisChar.rarityReq      || 0,
+                gearReq:   thisChar.gearReq        || 0,
+                relicReq:  thisChar.relicReq       || 0,
+                valid: thisChar.isValid            || false,
+
+                // Mark as a ship, and/ or as required
+                ship: thisChar.isShip              || false,
+                required: thisChar.isRequired      || false,
+            });
+        }
+
+        const unitsOut = {};
+        if (unitList.find(u => !u.ship)) unitsOut.charList = unitList.filter(u => !u.ship);
+        if (unitList.find(u => u.ship))  unitsOut.shipList = unitList.filter(u => u.ship);
+
+        const isRequired = unitList.find(u => u.required) ? true : false;
+
+        const headerHeight = req.body.header ? Math.floor(req.body.header.length / 30) * 55 : 0;
+
+        const charRowHeight = 65;
+
+        const maxWidth = 1168;
+
+        // Figure out the needed height
+        const maxHeight = 40
+            + ((Object.keys(unitsOut).length-1) * 30)                                 // The amount of spacers needed
+            + ((unitList.length+1) * charRowHeight)                                 // The number of units
+            + (req?.body?.lastUpdated ? 55 : 0)                                     // Space for a footer
+            + headerHeight                                                          // Header spacing
+            + (isRequired ? 30 : 0)                                                 // Extra for the required unit description
+            + (unitsOut?.charList?.length && unitsOut?.shipList?.length ? 40 : 0);  // Add space for the spacer between char & ship if needed
+        await page.setViewport({width: maxWidth, height: maxHeight});
+
+        const objIn = {
+            baseURL: `http://localhost:${config.port}`,
+            maxCharWidth: maxWidth,
+            header: req.body.header,
+            units: unitsOut,
+            required: isRequired
+        };
+        if (req.body.lastUpdated) {
+            objIn.footer = `Last updated ${new Date(req.body.lastUpdated).toUTCString()}`;
+        }
+
+        ejs.renderFile(__dirname + "/ejs/panicReq.ejs", objIn, async (err, result) => {
+            if (err) return console.log("info", "error encountered: " + err);
+            await page.setContent(result, {
+                waitUntil: ["load"]
+            });
+            await page.addStyleTag({path: "./public/css/styles.css"});
+            const ssBuffer = await page.screenshot({type: "png", omitBackground: true});
+            res.contentType("image/png");
+            res.send(Buffer.from(ssBuffer, "binary"));
+        });
+    });
 
     app.post("/multi-char", async (req, res) => {
         // Take in an array of characters, put it into rows up up to 5?

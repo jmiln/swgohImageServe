@@ -1,0 +1,8 @@
+<div>
+    <div style="display: table; text-align: center; color: white; padding-top: 5px; padding-left: 10px;">
+        <div style="display: table-row; background-color: red;">
+            <%- include('../partials/char', {char: char}); %>
+            <%= char.type %>: <%= char.tier?.toLocaleString() %>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,112 @@
+<head>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<style>
+    body {
+        background-image: linear-gradient(#1A2E37, #1A506F);
+        color: white;
+        font-size: 30px;
+        font-family: "Arial";
+    }
+    .table {
+        display: table;
+        width: 1130px;
+        text-align: center;
+        margin-left: 10px;
+    }
+    .thead {
+        display: table-header-group;
+    }
+    .tbody {
+        display: table-row-group;
+    }
+    .tr {
+        display: table-row;
+        line-height: .5
+    }
+    .tHeadCell {
+        width: 110px;
+        font-weight: bold;
+    }
+    .td {
+        background-color: rgba(0,135,0,0.5);
+    }
+    .td, .tHeadCell {
+        display: table-cell;
+        vertical-align: middle;
+        border-bottom: 2px solid black;
+        text-align: center;
+    }
+    .td:not(:last-child) {
+        border-right: 2px solid black;
+    }
+    .td:last-child {
+        font-weight: bold;
+    }
+    .td:not(:first-child) {
+        padding-left: 10px;
+    }
+    .td:first-child {
+        border-right: 0;
+        background-color: black;
+        max-width: 60px;
+    }
+    .td > img {
+        width: 60px;
+        height: 60px;
+    }
+    .tCenter {
+        text-align: center;
+    }
+    .tLeft {
+        text-align: left;
+    }
+    .dSide {
+        border: 2px solid red;
+    }
+    .lSide {
+        border: 2px solid blue;
+    }
+    #reqDesc {
+        font-size: 16px;
+        text-align: center;
+    }
+</style>
+
+<base href="<%= baseURL %>">
+
+<body>
+    <div id="wrapper" style="max-width: <%= maxCharWidth %>">
+        <div id="header" style="padding-bottom: 30px;">
+            <%- header %>
+        </div>
+        <div id="reqDesc" class="<% if (!required) { %>hidden<% } %>">
+            Any units marked with * before their name are specifically required for this event.
+            <br/>
+            You then need to get enough others from the list to make a full team, including the required one(s)
+        </div>
+        <% if (units.charList?.length) { %>
+            <div class="table">
+                <%- include('../partials/charReqRowHeaders') %>
+                <!-- Put the list of characters here-->
+                <% units.charList.forEach(function(char) { %>
+                <%- include('../partials/charReqRow', {char: char}); %>
+                <% }); %>
+            </div>
+        <% } %>
+        <!-- Add some space between the characters & ships -->
+        <% if (units.charList?.length && units.shipList?.length) { %>
+            <br/>
+        <% } %>
+        <% if (units.shipList?.length) { %>
+            <div class="table">
+                <%- include('../partials/shipReqRowHeaders') %>
+                <!-- Put the list of characters here-->
+                <% units.shipList.forEach(function(ship) { %>
+                <%- include('../partials/shipReqRow', {ship: ship}); %>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</body>

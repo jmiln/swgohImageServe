@@ -5,7 +5,7 @@
     <div class="td tLeft <% if (!char.valid) { %>invalid<% } %>"><% if (char.required) { %>* <% } %><%= char.name %></div>
     <div class="td <% if (char.gp < char.gpReq) { %>invalid<% } %>"><%= char.gp.toLocaleString() %></div>
     <div class="td <% if (char.rarity < char.rarityReq) { %>invalid<% } %>"><%= char.rarity %>/<%= char.rarityReq %></div>
-    <div class="td <% if (char.rarity < char.rarityReq) { %>invalid<% } %>"><%= char.gear %>/<%= char.gearReq  %></div>
+    <div class="td <% if (char.gear < char.gearReq) { %>invalid<% } %>"><%= char.gear %>/<%= char.gearReq  %></div>
     <div class="td <% if (char.relic < char.relicReq) { %>invalid<% } %>"><%= char.relic %>/<%= char.relicReq %></div>
     <div class="td <% if (!char.valid) { %>invalid<% } %>"><% if (char.valid) { %>✓<% } else { %>X<% } %></div>
 </div>

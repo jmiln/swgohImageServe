@@ -191,7 +191,11 @@ const init = async function() {
 
         const isRequired = unitList.find(u => u.required) ? true : false;
 
-        const headerHeight = req.body.header ? Math.floor(req.body.header.length / 30) * 55 : 0;
+        let headerHeight = 0;
+        if (req.body?.header) {
+            const rowCount = Math.floor(req.body.header.length / 30);
+            headerHeight = rowCount ? rowCount * 55 : 55;
+        }
 
         const charRowHeight = 65;
 
@@ -199,7 +203,7 @@ const init = async function() {
 
         // Figure out the needed height
         const maxHeight = 40
-            + ((Object.keys(unitsOut).length-1) * 30)                                 // The amount of spacers needed
+            + ((Object.keys(unitsOut).length-1) * 30)                               // The amount of spacers needed
             + ((unitList.length+1) * charRowHeight)                                 // The number of units
             + (req?.body?.lastUpdated ? 55 : 0)                                     // Space for a footer
             + headerHeight                                                          // Header spacing

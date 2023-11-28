@@ -78,20 +78,24 @@
 
 <body>
     <div id="wrapper" style="max-width: <%= maxCharWidth %>">
-        <div id="header" style="padding-bottom: 30px;">
-            <%- header %>
-        </div>
-        <div id="reqDesc" class="<% if (!required) { %>hidden<% } %>">
-            Any units marked with * before their name are specifically required for this event.
-            <br/>
-            You then need to get enough others from the list to make a full team, including the required one(s)
-        </div>
+        <% if (header?.length) { %>
+            <div id="header" style="padding-bottom: 30px;">
+                <%- header %>
+            </div>
+        <% } %>
+        <% if (required) { %>
+            <div id="reqDesc">
+                Any units marked with * before their name are specifically required for this event.
+                <br/>
+                You then need to get enough others from the list to make a full team, including the required one(s)
+            </div>
+        <% } %>
         <% if (units.charList?.length) { %>
             <div class="table">
                 <%- include('../partials/charReqRowHeaders') %>
                 <!-- Put the list of characters here-->
                 <% units.charList.forEach(function(char) { %>
-                <%- include('../partials/charReqRow', {char: char}); %>
+                    <%- include('../partials/charReqRow', {char: char}); %>
                 <% }); %>
             </div>
         <% } %>
@@ -104,7 +108,7 @@
                 <%- include('../partials/shipReqRowHeaders') %>
                 <!-- Put the list of characters here-->
                 <% units.shipList.forEach(function(ship) { %>
-                <%- include('../partials/shipReqRow', {ship: ship}); %>
+                    <%- include('../partials/shipReqRow', {ship: ship}); %>
                 <% }); %>
             </div>
         <% } %>

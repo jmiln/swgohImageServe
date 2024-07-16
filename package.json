@@ -1,22 +1,25 @@
 {
-  "name": "imgserv",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@swgoh-utils/comlink": "^1.4.1",
-    "body-parser": "^1.20.2",
-    "chart.js": "^4.4.3",
-    "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "puppeteer": "^22.9.0"
-  },
-  "devDependencies": {
-    "eslint": "^8.57.0"
-  }
+    "name": "imgserv",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@swgoh-utils/comlink": "^1.4.1",
+        "body-parser": "^1.20.2",
+        "chart.js": "^4.4.3",
+        "ejs": "^3.1.10",
+        "express": "^4.19.2",
+        "puppeteer": "^22.13.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.57.0"
+    },
+    "overrides": {
+        "ws": "^8.17.1"
+    }
 }

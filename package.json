@@ -11,15 +11,15 @@
     "dependencies": {
         "@swgoh-utils/comlink": "^1.4.1",
         "body-parser": "^1.20.3",
-        "chart.js": "^4.4.4",
+        "chart.js": "^4.4.6",
         "ejs": "^3.1.10",
-        "express": "^4.21.0",
-        "puppeteer": "^23.5.0"
+        "express": "^4.21.1",
+        "puppeteer": "^23.6.1"
     },
     "overrides": {
         "ws": "^8.17.1"
     },
     "devDependencies": {
-        "@biomejs/biome": "^1.9.3"
+        "@biomejs/biome": "^1.9.4"
     }
 }

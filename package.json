@@ -14,12 +14,12 @@
         "chart.js": "^4.5.0",
         "ejs": "^3.1.10",
         "express": "^5.1.0",
-        "puppeteer": "^24.12.1"
+        "puppeteer": "^24.16.2"
     },
     "overrides": {
         "ws": "^8.17.1"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.1.1"
+        "@biomejs/biome": "^2.2.0"
     }
 }

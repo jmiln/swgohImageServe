@@ -9,12 +9,11 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@swgoh-utils/comlink": "^1.4.1",
-        "body-parser": "^2.2.0",
-        "chart.js": "^4.5.0",
-        "ejs": "^3.1.10",
-        "express": "^5.1.0",
-        "puppeteer": "^24.16.2"
+        "@swgoh-utils/comlink": "^2.0.0",
+        "chart.js": "^4.5.1",
+        "ejs": "^4.0.1",
+        "express": "^5.2.1",
+        "puppeteer": "^24.34.0"
     },
     "overrides": {
         "ws": "^8.17.1"

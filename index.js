@@ -1,7 +1,6 @@
 const config = require("./config.js");
 const express = require("express");
 const puppeteer = require("puppeteer");
-const bodyParser = require("body-parser");
 const ejs = require("ejs");
 
 const fs = require("node:fs");
@@ -57,8 +56,8 @@ const init = async () => {
     const page = await browser.newPage();
 
     const app = express();
-    app.use(bodyParser.urlencoded({ extended: false }));
-    app.use(bodyParser.json());
+    app.use(express.urlencoded({ extended: false }));
+    app.use(express.json());
 
     app.use(express.static(`${__dirname}/public`));
 

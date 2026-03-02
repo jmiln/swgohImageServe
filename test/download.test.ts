@@ -1,8 +1,8 @@
-import { test, mock } from "node:test";
 import assert from "node:assert/strict";
-import path from "node:path";
-import os from "node:os";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { mock, test } from "node:test";
 import { checkImgOrDownload } from "../modules/download.ts";
 
 const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), "imgtest-"));

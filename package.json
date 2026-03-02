@@ -16,6 +16,7 @@
         "@swgoh-utils/comlink": "^2.0.0",
         "ejs": "^4.0.1",
         "express": "^5.2.1",
+        "pino": "^10.3.1",
         "puppeteer": "^24.37.5",
         "zod": "^4.3.6"
     },
@@ -26,6 +27,7 @@
         "@biomejs/biome": "^2.4.4",
         "@types/ejs": "^3.1.5",
         "@types/express": "^5.0.6",
-        "@types/node": "^25.3.3"
+        "@types/node": "^25.3.3",
+        "pino-pretty": "^13.1.3"
     }
 }

@@ -1,10 +1,13 @@
-import express, { type Request, type Response } from "express";
-import puppeteer from "puppeteer";
-import ejs from "ejs";
 import fs from "node:fs";
 import ComlinkStub from "@swgoh-utils/comlink";
+import ejs from "ejs";
+import express, { type Request, type Response } from "express";
+import pino from "pino";
+import puppeteer from "puppeteer";
 import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
+
+const logger = pino();
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
 const minimal_args = [
@@ -123,7 +126,7 @@ const init = async () => {
     await updateMetaData();
     setInterval(
         () => {
-            updateMetaData().catch((err) => console.error("Metadata refresh failed:", err));
+            updateMetaData().catch((err) => logger.error({ err }, "Metadata refresh failed"));
         },
         60 * 60 * 1000,
     );
@@ -323,14 +326,14 @@ const init = async () => {
     });
 
     app.use((err: Error, _req: Request, res: Response, _next: express.NextFunction) => {
-        console.error(err);
+        logger.error({ err }, "Unhandled request error");
         if (!res.headersSent) {
             res.status(500).send("Internal server error");
         }
     });
 
     app.listen(env.PORT, () => {
-        console.log(`Express server listening on port ${env.PORT}`);
+        logger.info(`Express server listening on port ${env.PORT}`);
     });
 };
 

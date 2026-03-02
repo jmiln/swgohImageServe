@@ -9,6 +9,6 @@
 /cacheDir
 
 # Specific Files
-config.js
+.env
 config.json
 settings.json

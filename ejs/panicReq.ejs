@@ -113,4 +113,9 @@
             </div>
         <% } %>
     </div>
+    <% if (typeof footer !== 'undefined' && footer) { %>
+        <div id="footer" style="text-align: center; color: white; font-size: 16px; padding-top: 10px;">
+            <%- footer %>
+        </div>
+    <% } %>
 </body>

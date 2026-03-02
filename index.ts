@@ -7,7 +7,7 @@ import puppeteer from "puppeteer";
 import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
 
-const logger = pino();
+const logger = pino({ base: { hostname: undefined } });
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
 const minimal_args = [
@@ -333,7 +333,7 @@ const init = async () => {
     });
 
     app.listen(env.PORT, () => {
-        logger.info(`Express server listening on port ${env.PORT}`);
+        logger.info(`ImageServe: Service started on port ${env.PORT}`);
     });
 };
 

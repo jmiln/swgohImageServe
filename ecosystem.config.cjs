@@ -3,6 +3,7 @@ module.exports = {
         {
             name: "imageServe",
             script: "index.ts",
+            interpreter: "node",
             node_args: "--env-file=.env",
             autorestart: true,
         },

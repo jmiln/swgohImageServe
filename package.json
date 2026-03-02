@@ -6,13 +6,14 @@
     "main": "index.ts",
     "scripts": {
         "start": "node --env-file=.env index.ts",
+        "lint": "biome check --no-errors-on-unmatched .",
+        "lint:write": "biome check --write --no-errors-on-unmatched .",
         "test": "node --test test/**/*.test.ts"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
         "@swgoh-utils/comlink": "^2.0.0",
-        "chart.js": "^4.5.1",
         "ejs": "^4.0.1",
         "express": "^5.2.1",
         "puppeteer": "^24.37.5",

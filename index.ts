@@ -124,7 +124,7 @@ const init = async () => {
     app.use(express.static(`${import.meta.dirname}/public`));
 
     await updateMetaData();
-    setInterval(
+    const metaInterval = setInterval(
         () => {
             updateMetaData().catch((err) => logger.error({ err }, "Metadata refresh failed"));
         },
@@ -332,9 +332,38 @@ const init = async () => {
         }
     });
 
-    app.listen(env.PORT, () => {
+    const server = app.listen(env.PORT, () => {
         logger.info(`ImageServe: Service started on port ${env.PORT}`);
     });
+
+    let isShuttingDown = false;
+    const shutdown = async (signal: string) => {
+        if (isShuttingDown) return;
+        isShuttingDown = true;
+        logger.info(`Received ${signal}, shutting down`);
+        clearInterval(metaInterval);
+        await browser.close();
+        server.close(() => {
+            logger.info("HTTP server closed");
+            process.exit(0);
+        });
+        setTimeout(() => {
+            logger.warn("Forced exit after shutdown timeout");
+            process.exit(1);
+        }, 10_000).unref();
+    };
+
+    const onSignal = (signal: string) =>
+        shutdown(signal).catch((err) => {
+            logger.error({ err }, "Shutdown error");
+            process.exit(1);
+        });
+
+    process.once("SIGTERM", () => onSignal("SIGTERM"));
+    process.once("SIGINT", () => onSignal("SIGINT"));
 };
 
-init();
+init().catch((err) => {
+    logger.error({ err }, "Fatal startup error");
+    process.exit(1);
+});

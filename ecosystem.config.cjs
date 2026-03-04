@@ -5,7 +5,9 @@ module.exports = {
             script: "index.ts",
             interpreter: "node",
             node_args: "--env-file=.env",
-            autorestart: true,
+            env: {
+                APP_NAME: "ImageServe",
+            },
         },
     ],
 };

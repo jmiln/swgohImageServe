@@ -7,7 +7,10 @@ import puppeteer from "puppeteer";
 import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
 
-const logger = pino({ base: { hostname: undefined } });
+const logger = pino({
+    name: process.env.APP_NAME || "ImageServe",
+    base: { hostname: undefined },
+});
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
 const minimal_args = [

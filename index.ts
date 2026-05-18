@@ -2,15 +2,10 @@ import fs from "node:fs/promises";
 import ComlinkStub from "@swgoh-utils/comlink";
 import ejs from "ejs";
 import express, { type Request, type Response } from "express";
-import pino from "pino";
 import puppeteer from "puppeteer";
 import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
-
-const logger = pino({
-    name: process.env.APP_NAME || "ImageServe",
-    base: { hostname: undefined },
-});
+import logger from "./modules/logger.ts";
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
 const minimal_args = [

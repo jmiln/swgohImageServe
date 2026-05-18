@@ -88,7 +88,7 @@ async function updateMetaData(): Promise<boolean> {
     return isUpdated;
 }
 
-const relicTier = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const toRelicLevel = (raw: number): number => Math.max(0, (raw || 0) - 2);
 const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zetas: 0, relic: 0, side: "", omicron: 0 };
 const assetPort = env.ASSET_PORT ?? null;
 
@@ -144,7 +144,7 @@ const init = async () => {
             level: (req.body.level as number) || charDef.level,
             gear: (req.body.gear as number) || charDef.gear,
             zetas: (req.body.zetas as number) || charDef.zetas,
-            relic: relicTier[req.body.relic as number] ?? charDef.relic,
+            relic: toRelicLevel(req.body.relic as number),
             omicron: (req.body.omicron as number) || charDef.omicron,
             side: (req.body.side as string) || charDef.side,
         };
@@ -197,7 +197,7 @@ const init = async () => {
                         name: thisChar.name as string | undefined,
                         rarity: (thisChar.rarity as number) || charDef.rarity,
                         gear: (thisChar.gear as number) || charDef.gear,
-                        relic: relicTier[thisChar.relic as number] ?? charDef.relic,
+                        relic: toRelicLevel(thisChar.relic as number),
                         side: (thisChar.side as string) || charDef.side,
                         gp: (thisChar.gp as number | string) || "N/A",
                         gpReq: (thisChar.gpReq as number) || 0,
@@ -290,7 +290,7 @@ const init = async () => {
                         level: (thisChar.level as number) || charDef.level,
                         gear: (thisChar.gear as number) || charDef.gear,
                         zetas: (thisChar.zetas as number) || charDef.zetas,
-                        relic: relicTier[thisChar.relic as number] ?? charDef.relic,
+                        relic: toRelicLevel(thisChar.relic as number),
                         omicron: (thisChar.omicron as number) || charDef.omicron,
                         side: (thisChar.side as string) || charDef.side,
                     };

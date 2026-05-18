@@ -23,13 +23,15 @@ test("returns cached filename without fetching when file exists", async () => {
     const fetchCalled = mock.fn();
     mock.method(globalThis, "fetch", fetchCalled);
 
-    const result = await checkImgOrDownload(`https://example.com/${imgName}`, dir, {});
+    try {
+        const result = await checkImgOrDownload(`https://example.com/${imgName}`, dir, {});
 
-    assert.equal(result, imgName);
-    assert.equal(fetchCalled.mock.calls.length, 0);
-
-    mock.restoreAll();
-    fs.rmSync(dir, { recursive: true });
+        assert.equal(result, imgName);
+        assert.equal(fetchCalled.mock.calls.length, 0);
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
 });
 
 test("downloads and saves file when not cached", async () => {
@@ -39,18 +41,18 @@ test("downloads and saves file when not cached", async () => {
 
     mock.method(globalThis, "fetch", async () => ({
         ok: true,
-        blob: async () => ({
-            arrayBuffer: async () => fakeContent.buffer,
-        }),
+        arrayBuffer: async () => fakeContent.buffer,
     }));
 
-    const result = await checkImgOrDownload(`https://example.com/${imgName}`, dir, {});
+    try {
+        const result = await checkImgOrDownload(`https://example.com/${imgName}`, dir, {});
 
-    assert.equal(result, imgName);
-    assert.ok(fs.existsSync(path.join(dir, imgName)));
-
-    mock.restoreAll();
-    fs.rmSync(dir, { recursive: true });
+        assert.equal(result, imgName);
+        assert.ok(fs.existsSync(path.join(dir, imgName)));
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
 });
 
 test("throws on non-ok fetch response instead of writing undefined", async () => {
@@ -62,13 +64,15 @@ test("throws on non-ok fetch response instead of writing undefined", async () =>
         statusText: "Not Found",
     }));
 
-    await assert.rejects(
-        () => checkImgOrDownload("https://example.com/tex.UNIT_BOBAFETT.png", dir, {}),
-        /Failed to download asset: 404/,
-    );
-
-    mock.restoreAll();
-    fs.rmSync(dir, { recursive: true });
+    try {
+        await assert.rejects(
+            () => checkImgOrDownload("https://example.com/tex.UNIT_BOBAFETT.png", dir, {}),
+            /Failed to download asset: 404/,
+        );
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
 });
 
 test("throws on fetch network error", async () => {
@@ -78,13 +82,15 @@ test("throws on fetch network error", async () => {
         throw new Error("ECONNREFUSED");
     });
 
-    await assert.rejects(
-        () => checkImgOrDownload("https://example.com/tex.UNIT_BOBAFETT.png", dir, {}),
-        /ECONNREFUSED/,
-    );
-
-    mock.restoreAll();
-    fs.rmSync(dir, { recursive: true });
+    try {
+        await assert.rejects(
+            () => checkImgOrDownload("https://example.com/tex.UNIT_BOBAFETT.png", dir, {}),
+            /ECONNREFUSED/,
+        );
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
 });
 
 test("builds correct assetUrl when assetPort is set", async () => {
@@ -96,33 +102,37 @@ test("builds correct assetUrl when assetPort is set", async () => {
         capturedUrl = url;
         return {
             ok: true,
-            blob: async () => ({ arrayBuffer: async () => Buffer.alloc(0).buffer }),
+            arrayBuffer: async () => Buffer.alloc(0).buffer,
         };
     });
 
-    await checkImgOrDownload(`https://example.com/${imgName}`, dir, {
-        assetPort: 3500,
-        assetVersion: "v42",
-    });
+    try {
+        await checkImgOrDownload(`https://example.com/${imgName}`, dir, {
+            assetPort: 3500,
+            assetVersion: "v42",
+        });
 
-    assert.match(capturedUrl, /localhost:3500\/Asset\/single/);
-    assert.match(capturedUrl, /assetName=UNIT_BOBAFETT/);
-    assert.match(capturedUrl, /version=v42/);
-
-    mock.restoreAll();
-    fs.rmSync(dir, { recursive: true });
+        assert.match(capturedUrl, /localhost:3500\/Asset\/single/);
+        assert.match(capturedUrl, /assetName=UNIT_BOBAFETT/);
+        assert.match(capturedUrl, /version=v42/);
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
 });
 
 test("throws when assetPort is set but filename has wrong format", async () => {
     const dir = tmpDir();
 
-    await assert.rejects(
-        () => checkImgOrDownload("https://example.com/badname.png", dir, {
-            assetPort: 3500,
-            assetVersion: "v42",
-        }),
-        /Unexpected asset filename format/,
-    );
-
-    fs.rmSync(dir, { recursive: true });
+    try {
+        await assert.rejects(
+            () => checkImgOrDownload("https://example.com/badname.png", dir, {
+                assetPort: 3500,
+                assetVersion: "v42",
+            }),
+            /Unexpected asset filename format/,
+        );
+    } finally {
+        fs.rmSync(dir, { recursive: true });
+    }
 });

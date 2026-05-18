@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import ComlinkStub from "@swgoh-utils/comlink";
 import ejs from "ejs";
 import express, { type Request, type Response } from "express";
@@ -70,8 +70,10 @@ const META_KEYS: (keyof MetaData)[] = ["assetVersion", "latestGamedataVersion", 
 async function updateMetaData(): Promise<boolean> {
     const meta = await comlinkStub.getMetaData();
     let metaFile: Partial<MetaData> = {};
-    if (fs.existsSync(META_FILE)) {
-        metaFile = JSON.parse(fs.readFileSync(META_FILE, "utf-8")) as Partial<MetaData>;
+    try {
+        metaFile = JSON.parse(await fs.readFile(META_FILE, "utf-8")) as Partial<MetaData>;
+    } catch {
+        // file doesn't exist yet
     }
     let isUpdated = false;
     const metaOut = {} as MetaData;
@@ -82,7 +84,7 @@ async function updateMetaData(): Promise<boolean> {
         metaOut[key] = meta[key];
     }
     if (isUpdated) {
-        fs.writeFileSync(META_FILE, JSON.stringify(metaOut), { encoding: "utf8" });
+        await fs.writeFile(META_FILE, JSON.stringify(metaOut), { encoding: "utf8" });
     }
     metadataFile = metaOut;
     return isUpdated;
@@ -90,10 +92,10 @@ async function updateMetaData(): Promise<boolean> {
 
 const toRelicLevel = (raw: number): number => Math.max(0, (raw || 0) - 2);
 const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zetas: 0, relic: 0, side: "", omicron: 0 };
-const assetPort = env.ASSET_PORT ?? null;
+const assetPort = env.ASSET_PORT;
 
 const cachedUrl = async (rawUrl: string) =>
-    `http://localhost:${env.PORT}/CharIcons/${await checkImgOrDownload(rawUrl, "./public/CharIcons", {
+    `http://localhost:${env.PORT}/CharIcons/${await checkImgOrDownload(rawUrl, `${import.meta.dirname}/public/CharIcons`, {
         assetPort,
         assetVersion: metadataFile.assetVersion,
     })}`;
@@ -101,10 +103,12 @@ const cachedUrl = async (rawUrl: string) =>
 const MAX_UNITS = 200;
 
 const init = async () => {
+    const cssContent = await fs.readFile(`${import.meta.dirname}/public/css/styles.css`, "utf-8");
+
     const browser = await puppeteer.launch({
         headless: true,
         args: minimal_args,
-        userDataDir: "./cacheDir",
+        userDataDir: `${import.meta.dirname}/cacheDir`,
     });
     const page = await browser.newPage();
 
@@ -156,7 +160,7 @@ const init = async () => {
         const ssBuffer = await withPage(async () => {
             await page.setViewport({ width: 210, height: 210 });
             await page.setContent(result, { waitUntil: ["load"] });
-            await page.addStyleTag({ path: `${import.meta.dirname}/public/css/styles.css` });
+            await page.addStyleTag({ content: cssContent });
             return page.screenshot({ type: "png", omitBackground: true });
         });
         res.contentType("image/png");
@@ -165,8 +169,7 @@ const init = async () => {
 
     app.post("/panic", async (req: Request, res: Response) => {
         const charListIn = req.body.units as unknown[];
-        if (!charListIn?.length) return res.status(400).send("Missing units list");
-        if (!Array.isArray(charListIn)) return res.status(400).send("units must be an array");
+        if (!Array.isArray(charListIn) || !charListIn.length) return res.status(400).send("Missing units list");
         if (charListIn.length > MAX_UNITS) return res.status(400).send(`units must not exceed ${MAX_UNITS} items`);
 
         let unitList: {
@@ -215,23 +218,26 @@ const init = async () => {
         }
 
         const unitsOut: { charList?: typeof unitList; shipList?: typeof unitList } = {};
-        if (unitList.find((u) => !u.ship)) unitsOut.charList = unitList.filter((u) => !u.ship);
-        if (unitList.find((u) => u.ship)) unitsOut.shipList = unitList.filter((u) => u.ship);
+        const chars = unitList.filter((u) => !u.ship);
+        const ships = unitList.filter((u) => u.ship);
+        if (chars.length) unitsOut.charList = chars;
+        if (ships.length) unitsOut.shipList = ships;
 
-        const isRequired = !!unitList.find((u) => u.required);
+        const isRequired = unitList.some((u) => u.required);
 
         let headerHeight = 0;
         if (req.body?.header) {
             const rowCount = Math.floor((req.body.header as string).length / 30);
-            headerHeight = rowCount ? rowCount * 55 : 55;
+            headerHeight = (rowCount + 1) * 55;
         }
 
         const charRowHeight = 65;
         const maxWidth = 1168;
+        const tableCount = Object.keys(unitsOut).length;
         const maxHeight =
             40 +
-            (Object.keys(unitsOut).length - 1) * 30 +
-            (unitList.length + 1) * charRowHeight +
+            (tableCount - 1) * 30 +
+            (unitList.length + tableCount) * charRowHeight +
             (req.body?.lastUpdated ? 55 : 0) +
             headerHeight +
             (isRequired ? 30 : 0) +
@@ -245,14 +251,16 @@ const init = async () => {
             required: isRequired,
         };
         if (req.body.lastUpdated) {
-            objIn.footer = `Last updated ${new Date(req.body.lastUpdated as string).toUTCString()}`;
+            const d = new Date(req.body.lastUpdated as string);
+            if (Number.isNaN(d.getTime())) return res.status(400).send("lastUpdated is not a valid date");
+            objIn.footer = `Last updated ${d.toUTCString()}`;
         }
 
         const result = await ejs.renderFile(`${import.meta.dirname}/ejs/panicReq.ejs`, objIn);
         const ssBuffer = await withPage(async () => {
             await page.setViewport({ width: maxWidth, height: maxHeight });
             await page.setContent(result, { waitUntil: ["load"] });
-            await page.addStyleTag({ path: `${import.meta.dirname}/public/css/styles.css` });
+            await page.addStyleTag({ content: cssContent });
             return page.screenshot({ type: "png", omitBackground: true });
         });
         res.contentType("image/png");
@@ -261,8 +269,7 @@ const init = async () => {
 
     app.post("/multi-char", async (req: Request, res: Response) => {
         const charListIn = req.body.characters as unknown[];
-        if (!charListIn?.length) return res.status(400).send("Missing characters list");
-        if (!Array.isArray(charListIn)) return res.status(400).send("characters must be an array");
+        if (!Array.isArray(charListIn) || !charListIn.length) return res.status(400).send("Missing characters list");
         if (charListIn.length > MAX_UNITS) return res.status(400).send(`characters must not exceed ${MAX_UNITS} items`);
 
         let charList: {
@@ -304,7 +311,14 @@ const init = async () => {
         const maxCharWidth = Math.min(charList.length, maxPerRow);
         const maxCharHeight = Math.ceil(charList.length / maxPerRow);
         const maxWidth = 200 * maxCharWidth;
-        const maxHeight = 55 + 250 * maxCharHeight + (req.body?.lastUpdated ? 55 : 0);
+
+        let headerHeight = 0;
+        if (req.body?.header) {
+            const rowCount = Math.floor((req.body.header as string).length / 30);
+            headerHeight = (rowCount + 1) * 55;
+        }
+
+        const maxHeight = headerHeight + 250 * maxCharHeight + (req.body?.lastUpdated ? 55 : 0);
 
         const objIn: Record<string, unknown> = {
             baseURL: `http://localhost:${env.PORT}`,
@@ -314,14 +328,16 @@ const init = async () => {
             footer: "",
         };
         if (req.body.lastUpdated) {
-            objIn.footer = `Last updated ${new Date(req.body.lastUpdated as string).toUTCString()}`;
+            const d = new Date(req.body.lastUpdated as string);
+            if (Number.isNaN(d.getTime())) return res.status(400).send("lastUpdated is not a valid date");
+            objIn.footer = `Last updated ${d.toUTCString()}`;
         }
 
         const result = await ejs.renderFile(`${import.meta.dirname}/ejs/multi-char.ejs`, objIn);
         const ssBuffer = await withPage(async () => {
             await page.setViewport({ width: maxWidth, height: maxHeight });
             await page.setContent(result, { waitUntil: ["load"] });
-            await page.addStyleTag({ path: `${import.meta.dirname}/public/css/styles.css` });
+            await page.addStyleTag({ content: cssContent });
             return page.screenshot({ type: "png", omitBackground: true });
         });
         res.contentType("image/png");

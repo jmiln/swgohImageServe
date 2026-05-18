@@ -11,10 +11,12 @@
 <base href="<%= baseURL %>">
 
 <body>
-    <div id="wrapper" style="max-width: <%= maxCharWidth %>">
+    <div id="wrapper" style="max-width: <%= maxCharWidth %>px">
+        <% if (header) { %>
         <div id="header">
             <%- header %>
         </div>
+        <% } %>
         <div id="charList">
             <% characters.forEach(function(char) { %>
                 <%- include('../partials/char', {char: char}); %>

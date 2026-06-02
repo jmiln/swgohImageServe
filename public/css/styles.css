@@ -258,18 +258,18 @@
     box-shadow: 0 0 1px 2px #111;
 }
 
-.collection-char .char-portrait {
-    margin: 15px auto 10px;
-    width: 160px;
-    display: block;
-}
-
 .char-portrait {
     background-color: #000;
     border-radius: 50px;
     position: relative;
     display: inline-block;
     vertical-align: top;
+}
+
+.collection-char .char-portrait {
+    margin: 15px auto 10px;
+    width: 160px;
+    display: block;
 }
 
 .char-portrait-dark-side .char-portrait-image {

@@ -99,6 +99,7 @@ const MAX_UNITS = 200;
 
 const init = async () => {
     const cssContent = await fs.readFile(`${import.meta.dirname}/public/css/styles.css`, "utf-8");
+    const chartJsContent = await fs.readFile(`${import.meta.dirname}/node_modules/chart.js/dist/chart.umd.js`, "utf-8");
 
     const browser = await puppeteer.launch({
         headless: true,
@@ -124,7 +125,6 @@ const init = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
     app.use(express.static(`${import.meta.dirname}/public`));
-
     await updateMetaData();
     const metaInterval = setInterval(
         () => {
@@ -333,6 +333,57 @@ const init = async () => {
             await page.setViewport({ width: maxWidth, height: maxHeight });
             await page.setContent(result, { waitUntil: ["load"] });
             await page.addStyleTag({ content: cssContent });
+            return page.screenshot({ type: "png", omitBackground: true });
+        });
+        res.contentType("image/png");
+        res.send(Buffer.from(ssBuffer));
+    });
+
+    app.post("/chart", async (req: Request, res: Response) => {
+        if (!Array.isArray(req.body.labels)) return res.status(400).send("Missing labels");
+        if (!Array.isArray(req.body.datasets)) return res.status(400).send("Missing datasets");
+
+        const MAX_CHART_DIMENSION = 4096;
+        const width = Math.min((req.body.width as number) || 800, MAX_CHART_DIMENSION);
+        const height = Math.min((req.body.height as number) || 400, MAX_CHART_DIMENSION);
+
+        const chartType = (req.body.type as string) || "line";
+        const labels = req.body.labels as unknown[];
+        const datasets = req.body.datasets as unknown[];
+        const title = (req.body.title as string) || undefined;
+        const showLegend = req.body.showLegend !== false;
+
+        const result = await ejs.renderFile(`${import.meta.dirname}/ejs/chart.ejs`, {
+            baseURL: `http://localhost:${env.PORT}`,
+            width,
+            height,
+        });
+        const chartInitScript = `(function() {
+            const ctx = document.getElementById("chart").getContext("2d");
+            new Chart(ctx, {
+                type: ${JSON.stringify(chartType)},
+                data: {
+                    labels: ${JSON.stringify(labels)},
+                    datasets: ${JSON.stringify(datasets)},
+                },
+                options: {
+                    responsive: false,
+                    animation: false,
+                    plugins: {
+                        legend: { display: ${showLegend} },
+                        ${title ? `title: { display: true, text: ${JSON.stringify(title)} },` : ""}
+                    },
+                    scales: {
+                        y: { beginAtZero: true },
+                    },
+                },
+            });
+        })();`;
+        const ssBuffer = await withPage(async () => {
+            await page.setViewport({ width, height });
+            await page.setContent(result, { waitUntil: ["load"] });
+            await page.addScriptTag({ content: chartJsContent });
+            await page.addScriptTag({ content: chartInitScript });
             return page.screenshot({ type: "png", omitBackground: true });
         });
         res.contentType("image/png");

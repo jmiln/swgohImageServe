@@ -390,6 +390,81 @@ const init = async () => {
         res.send(Buffer.from(ssBuffer));
     });
 
+    app.post("/arena", async (req: Request, res: Response) => {
+        const charTeamIn = req.body.charTeam as unknown[];
+        const fleetTeamIn = req.body.fleetTeam as unknown[];
+        if (!Array.isArray(charTeamIn) || !charTeamIn.length) return res.status(400).send("Missing charTeam");
+        if (!Array.isArray(fleetTeamIn) || !fleetTeamIn.length) return res.status(400).send("Missing fleetTeam");
+        const MAX_CHAR_SQUAD = 5;
+        const MAX_FLEET_SQUAD = 8; // 1 capital + 3 starting + 3 reinforcements
+        if (charTeamIn.length > MAX_CHAR_SQUAD) return res.status(400).send(`charTeam must not exceed ${MAX_CHAR_SQUAD} items`);
+        if (fleetTeamIn.length > MAX_FLEET_SQUAD) return res.status(400).send(`fleetTeam must not exceed ${MAX_FLEET_SQUAD} items`);
+
+        type ArenaUnit = {
+            defId: string;
+            charUrl: string;
+            name: string | undefined;
+            rarity: number;
+            level: number;
+            gear: number;
+            zetas: number;
+            relic: number;
+            omicron: number;
+            side: string;
+        };
+
+        const mapUnit = async (u: unknown, isFleet: boolean): Promise<ArenaUnit> => {
+            const thisChar = u as Record<string, unknown>;
+            if (!thisChar.charUrl) throw new Error(`${isFleet ? "fleetTeam" : "charTeam"} unit ${thisChar.defId} missing charUrl`);
+            return {
+                defId: thisChar.defId as string,
+                charUrl: await cachedUrl(thisChar.charUrl as string),
+                name: thisChar.name as string | undefined,
+                rarity: (thisChar.rarity as number) || charDef.rarity,
+                level: (thisChar.level as number) || charDef.level,
+                gear: isFleet ? 0 : (thisChar.gear as number) || charDef.gear,
+                zetas: (thisChar.zetas as number) || charDef.zetas,
+                relic: isFleet ? 0 : toRelicLevel(thisChar.relic as number),
+                omicron: (thisChar.omicron as number) || charDef.omicron,
+                side: (thisChar.side as string) || charDef.side,
+            };
+        };
+
+        let charTeam: ArenaUnit[];
+        let fleetTeam: ArenaUnit[];
+        try {
+            charTeam = await Promise.all(charTeamIn.map((u) => mapUnit(u, false)));
+            fleetTeam = await Promise.all(fleetTeamIn.map((u) => mapUnit(u, true)));
+        } catch (err) {
+            return res.status(400).send((err as Error).message);
+        }
+
+        const width = 200 * Math.max(charTeam.length, fleetTeam.length);
+        const PLAYER_HEADER_H = req.body.name || req.body.allyCode ? 50 : 0; // px: header font-size 28 + padding
+        // 20 body padding + optional header + char label (45) + char row (250) + divider (27) + fleet label (45) + fleet row (250)
+        const height = 20 + PLAYER_HEADER_H + 45 + 250 + 27 + 45 + 250;
+
+        const result = await ejs.renderFile(`${import.meta.dirname}/ejs/arena.ejs`, {
+            baseURL: `http://localhost:${env.PORT}`,
+            name: (req.body.name as string) || undefined,
+            allyCode: (req.body.allyCode as string) || undefined,
+            charRank: (req.body.charRank as number) || 0,
+            fleetRank: (req.body.fleetRank as number) || 0,
+            charTeam,
+            fleetTeam,
+            width,
+        });
+
+        const ssBuffer = await withPage(async () => {
+            await page.setViewport({ width, height });
+            await page.setContent(result, { waitUntil: ["load"] });
+            await page.addStyleTag({ content: cssContent });
+            return page.screenshot({ type: "png", omitBackground: true });
+        });
+        res.contentType("image/png");
+        res.send(Buffer.from(ssBuffer));
+    });
+
     app.use((err: Error, _req: Request, res: Response, _next: express.NextFunction) => {
         logger.error({ err }, "Unhandled request error");
         if (!res.headersSent) {

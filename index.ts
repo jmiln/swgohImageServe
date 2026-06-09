@@ -348,18 +348,58 @@ const init = async () => {
         const height = Math.min((req.body.height as number) || 400, MAX_CHART_DIMENSION);
 
         const chartType = (req.body.type as string) || "line";
-        const labels = req.body.labels as unknown[];
-        const datasets = req.body.datasets as unknown[];
+        const labels = (req.body.labels as unknown[]).map((l) => l ?? "");
+        const datasets = (req.body.datasets as unknown[]).filter((d) => d != null);
         const title = (req.body.title as string) || undefined;
         const showLegend = req.body.showLegend !== false;
+        const showPointLabels = req.body.pointLabels === true;
 
         const result = await ejs.renderFile(`${import.meta.dirname}/ejs/chart.ejs`, {
             baseURL: `http://localhost:${env.PORT}`,
             width,
             height,
         });
+        const pointLabelsPluginDef = showPointLabels
+            ? `
+            const pointLabelsPlugin = {
+                id: 'pointLabels',
+                afterDatasetsDraw(chart) {
+                    const canvasCtx = chart.ctx;
+                    const placedBoxes = [];
+                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                        const meta = chart.getDatasetMeta(datasetIndex);
+                        if (!dataset.data) return;
+                        meta.data.forEach((element, index) => {
+                            const value = dataset.data[index];
+                            if (value == null) return;
+                            const label = String(value);
+                            const x = element.x;
+                            const y = element.y - 12;
+                            canvasCtx.save();
+                            canvasCtx.font = 'bold 11px sans-serif';
+                            const textWidth = canvasCtx.measureText(label).width;
+                            const pad = 2;
+                            const box = { left: x - textWidth / 2 - pad, right: x + textWidth / 2 + pad, top: y - 13, bottom: y + 2 };
+                            const overlaps = placedBoxes.some(b =>
+                                box.left < b.right && box.right > b.left &&
+                                box.top < b.bottom && box.bottom > b.top
+                            );
+                            if (!overlaps) {
+                                placedBoxes.push(box);
+                                canvasCtx.fillStyle = typeof dataset.borderColor === 'string' ? dataset.borderColor : '#333';
+                                canvasCtx.textAlign = 'center';
+                                canvasCtx.textBaseline = 'bottom';
+                                canvasCtx.fillText(label, x, y);
+                            }
+                            canvasCtx.restore();
+                        });
+                    });
+                }
+            };`
+            : "";
         const chartInitScript = `(function() {
             const ctx = document.getElementById("chart").getContext("2d");
+            ${pointLabelsPluginDef}
             new Chart(ctx, {
                 type: ${JSON.stringify(chartType)},
                 data: {
@@ -377,6 +417,7 @@ const init = async () => {
                         y: { beginAtZero: true },
                     },
                 },
+                ${showPointLabels ? "plugins: [pointLabelsPlugin]," : ""}
             });
         })();`;
         const ssBuffer = await withPage(async () => {
@@ -396,7 +437,7 @@ const init = async () => {
         if (!Array.isArray(charTeamIn) || !charTeamIn.length) return res.status(400).send("Missing charTeam");
         if (!Array.isArray(fleetTeamIn) || !fleetTeamIn.length) return res.status(400).send("Missing fleetTeam");
         const MAX_CHAR_SQUAD = 5;
-        const MAX_FLEET_SQUAD = 8; // 1 capital + 3 starting + 3 reinforcements
+        const MAX_FLEET_SQUAD = 8; // 1 capital + 3 starting + 4 reinforcements
         if (charTeamIn.length > MAX_CHAR_SQUAD) return res.status(400).send(`charTeam must not exceed ${MAX_CHAR_SQUAD} items`);
         if (fleetTeamIn.length > MAX_FLEET_SQUAD) return res.status(400).send(`fleetTeam must not exceed ${MAX_FLEET_SQUAD} items`);
 

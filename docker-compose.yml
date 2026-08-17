@@ -1,6 +1,6 @@
 services:
   imageserve:
-    image: ghcr.io/jmiln/imageserve:${IMAGE_TAG:-latest}
+    image: ghcr.io/jmiln/swgohimageserve:${IMAGE_TAG:-latest}
     # `build:` is for local iteration only. It cannot set the OCI labels, which need the git SHA,
     # so anything deployed or kept should come from `npm run release:image`.
     build: .

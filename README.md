@@ -144,8 +144,8 @@ uid 1000 — otherwise the container cannot write downloaded icons.
 To publish the image for another host:
 
 ```bash
-docker build -t ghcr.io/jmiln/imageserve:latest .
-docker push ghcr.io/jmiln/imageserve:latest
+docker build -t ghcr.io/jmiln/swgohimageserve:latest .
+docker push ghcr.io/jmiln/swgohimageserve:latest
 ```
 
 ## Releasing
@@ -156,7 +156,7 @@ tag. The changelog is written before the bump so it lands in the release commit.
 ```bash
 npm run changelog:draft     # prints commits since the last tag, grouped by type
 # paste into CHANGELOG.md and edit into prose
-npm version minor           # bumps package.json, commits, tags v2.1.0
+npm version minor           # bumps package.json, commits, tags 2.1.0
 npm run release:image       # builds :2.1.0 and :latest with OCI labels
 npm run release:push        # pushes both tags (needs `docker login ghcr.io`)
 ```
@@ -178,7 +178,7 @@ IMAGE_TAG=2.0.0 docker compose up -d
 
 ```bash
 curl -s http://localhost:3600/health          # version the process loaded
-docker inspect ghcr.io/jmiln/imageserve:latest \
+docker inspect ghcr.io/jmiln/swgohimageserve:latest \
   --format '{{index .Config.Labels "org.opencontainers.image.version"}}'   # version the image claims
 ```
 

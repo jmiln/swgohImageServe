@@ -7,7 +7,7 @@ LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
 if [ -z "$LAST_TAG" ]; then
     echo "No git tags found, so there is no starting point to diff from." >&2
     echo "Tag a baseline first, e.g.:" >&2
-    echo "  git tag -a v1.0.0 ee95583 -m 'Pre-Docker baseline'" >&2
+    echo "  git tag -a 1.0.0 ee95583 -m 'Pre-Docker baseline'" >&2
     exit 1
 fi
 

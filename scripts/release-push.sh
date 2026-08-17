@@ -4,7 +4,7 @@
 # force a rebuild.
 set -euo pipefail
 
-IMAGE=ghcr.io/jmiln/imageserve
+IMAGE=ghcr.io/jmiln/swgohimageserve
 VERSION=$(node -p "require('./package.json').version")
 
 if ! docker image inspect "${IMAGE}:${VERSION}" >/dev/null 2>&1; then

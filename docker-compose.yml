@@ -1,0 +1,25 @@
+services:
+  imageserve:
+    image: ghcr.io/jmiln/imageserve:latest
+    build: .
+    container_name: imageserve
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - swgoh
+    volumes:
+      - ${ICON_DIR:-./public/CharIcons}:/app/public/CharIcons
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:'+process.env.PORT+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+
+# Owned by the separate `fake-help` compose project, which runs comlink, nginx and swgoh-ae2.
+# That project must be up first; compose will neither create nor destroy this network.
+networks:
+  swgoh:
+    name: fake-help_default
+    external: true

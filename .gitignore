@@ -6,6 +6,7 @@
 /swgohAPI
 /imageOut/*
 /public/CharIcons/*
+!/public/CharIcons/.gitkeep
 /cacheDir
 
 # Specific Files

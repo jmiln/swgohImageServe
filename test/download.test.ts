@@ -93,7 +93,7 @@ test("throws on fetch network error", async () => {
     }
 });
 
-test("builds correct assetUrl when assetPort is set", async () => {
+test("builds correct asset request URL when assetUrl is set", async () => {
     const dir = tmpDir();
     const imgName = "tex.UNIT_BOBAFETT.png";
     let capturedUrl = "";
@@ -108,11 +108,11 @@ test("builds correct assetUrl when assetPort is set", async () => {
 
     try {
         await checkImgOrDownload(`https://example.com/${imgName}`, dir, {
-            assetPort: 3500,
+            assetUrl: "http://swgoh-ae:8080",
             assetVersion: "v42",
         });
 
-        assert.match(capturedUrl, /localhost:3500\/Asset\/single/);
+        assert.match(capturedUrl, /^http:\/\/swgoh-ae:8080\/Asset\/single/);
         assert.match(capturedUrl, /assetName=UNIT_BOBAFETT/);
         assert.match(capturedUrl, /version=v42/);
     } finally {
@@ -121,15 +121,43 @@ test("builds correct assetUrl when assetPort is set", async () => {
     }
 });
 
-test("throws when assetPort is set but filename has wrong format", async () => {
+test("strips a trailing slash from assetUrl so the path is not doubled", async () => {
+    const dir = tmpDir();
+    const imgName = "tex.UNIT_BOBAFETT.png";
+    let capturedUrl = "";
+
+    mock.method(globalThis, "fetch", async (url: string) => {
+        capturedUrl = url;
+        return {
+            ok: true,
+            arrayBuffer: async () => Buffer.alloc(0).buffer,
+        };
+    });
+
+    try {
+        await checkImgOrDownload(`https://example.com/${imgName}`, dir, {
+            assetUrl: "http://swgoh-ae:8080/",
+            assetVersion: "v42",
+        });
+
+        assert.match(capturedUrl, /^http:\/\/swgoh-ae:8080\/Asset\/single/);
+        assert.doesNotMatch(capturedUrl, /\/\/Asset/);
+    } finally {
+        mock.restoreAll();
+        fs.rmSync(dir, { recursive: true });
+    }
+});
+
+test("throws when assetUrl is set but filename has wrong format", async () => {
     const dir = tmpDir();
 
     try {
         await assert.rejects(
-            () => checkImgOrDownload("https://example.com/badname.png", dir, {
-                assetPort: 3500,
-                assetVersion: "v42",
-            }),
+            () =>
+                checkImgOrDownload("https://example.com/badname.png", dir, {
+                    assetUrl: "http://swgoh-ae:8080",
+                    assetVersion: "v42",
+                }),
             /Unexpected asset filename format/,
         );
     } finally {

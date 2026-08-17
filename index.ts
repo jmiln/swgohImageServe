@@ -5,6 +5,7 @@ import express, { type Request, type Response } from "express";
 import puppeteer from "puppeteer";
 import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
+import { createHealthHandler } from "./modules/health.ts";
 import logger from "./modules/logger.ts";
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
@@ -87,11 +88,11 @@ async function updateMetaData(): Promise<boolean> {
 
 const toRelicLevel = (raw: number): number => Math.max(0, (raw || 0) - 2);
 const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zetas: 0, relic: 0, side: "", omicron: 0 };
-const assetPort = env.ASSET_PORT;
+const assetUrl = env.ASSET_URL;
 
 const cachedUrl = async (rawUrl: string) =>
     `http://localhost:${env.PORT}/CharIcons/${await checkImgOrDownload(rawUrl, `${import.meta.dirname}/public/CharIcons`, {
-        assetPort,
+        assetUrl,
         assetVersion: metadataFile.assetVersion,
     })}`;
 
@@ -125,6 +126,10 @@ const init = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
     app.use(express.static(`${import.meta.dirname}/public`));
+    app.get(
+        "/health",
+        createHealthHandler(() => browser.connected),
+    );
     await updateMetaData();
     const metaInterval = setInterval(
         () => {

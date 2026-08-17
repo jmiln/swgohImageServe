@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 
 interface DownloadOpts {
-    assetPort?: number | null;
+    assetUrl?: string | null;
     assetVersion?: string;
 }
 
@@ -28,15 +28,16 @@ export async function checkImgOrDownload(url: string, dir: string, opts: Downloa
     if (existing) return existing;
 
     const download = (async () => {
-        let assetUrl: string | undefined;
-        if (opts.assetPort) {
+        let resolvedUrl: string | undefined;
+        if (opts.assetUrl) {
             const parts = imgName.split(".");
             if (parts.length < 3) throw new Error(`Unexpected asset filename format: "${imgName}"`);
             const assetName = parts[1];
-            assetUrl = `http://localhost:${opts.assetPort}/Asset/single?forceReDownload=true&version=${opts.assetVersion}&assetName=${assetName}`;
+            const assetBase = opts.assetUrl.replace(/\/+$/, "");
+            resolvedUrl = `${assetBase}/Asset/single?forceReDownload=true&version=${opts.assetVersion}&assetName=${assetName}`;
         }
 
-        const res = await fetch(assetUrl ?? url);
+        const res = await fetch(resolvedUrl ?? url);
         if (!res.ok) throw new Error(`Failed to download asset: ${res.status} ${res.statusText}`);
         const buffer = Buffer.from(await res.arrayBuffer());
         await fs.writeFile(filePath, buffer);

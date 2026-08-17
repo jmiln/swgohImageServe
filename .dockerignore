@@ -1,0 +1,9 @@
+*
+!package.json
+!package-lock.json
+!index.ts
+!modules/
+!ejs/
+!partials/
+!public/
+public/CharIcons/

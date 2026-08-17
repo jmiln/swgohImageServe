@@ -158,7 +158,7 @@ npm run changelog:draft     # prints commits since the last tag, grouped by type
 # paste into CHANGELOG.md and edit into prose
 npm version minor           # bumps package.json, commits, tags 2.1.0
 npm run release:image       # builds :2.1.0 and :latest with OCI labels
-npm run release:push        # pushes both tags (needs `docker login ghcr.io`)
+npm run release:push        # pushes both image tags AND the git tag (needs `docker login ghcr.io`)
 ```
 
 `release:image` refuses to run unless the working tree is clean and `HEAD` is exactly the tag matching

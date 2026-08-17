@@ -151,20 +151,25 @@ docker push ghcr.io/jmiln/swgohimageserve:latest
 ## Releasing
 
 Versions follow semver, with `package.json` as the source of truth and `npm version` creating the git
-tag. The changelog is written before the bump so it lands in the release commit.
+tag. The changelog is written before the bump so it lands in the release commit. Pushing the tag is
+what publishes the image — nothing is built locally.
 
 ```bash
 npm run changelog:draft     # prints commits since the last tag, grouped by type
 # paste into CHANGELOG.md and edit into prose
 npm version minor           # bumps package.json, commits, tags 2.1.0
-npm run release:image       # builds :2.1.0 and :latest with OCI labels
-npm run release:push        # pushes both image tags AND the git tag (needs `docker login ghcr.io`)
+git push origin master --tags
 ```
 
-`release:image` refuses to run unless the working tree is clean and `HEAD` is exactly the tag matching
-`package.json`. A version tag is meant to be trustworthy, and an image labelled `2.1.0` built from
-something that is not 2.1.0 only causes damage later. Use `docker compose build` for local iteration
-instead.
+GitHub Actions then runs lint, type checks, and unit tests, builds the image, smoke-tests it against
+a fake Comlink, and only then pushes `:2.1.0` and `:latest` to GHCR. A failure at any step means
+nothing is published.
+
+Because the tag reaches the remote before the image exists, an image whose
+`org.opencontainers.image.revision` label points at an unreachable commit cannot occur.
+
+For local iteration, `docker compose build` uses the same Dockerfile. It applies no OCI labels and
+publishes nothing, which is the point: the only path that publishes is CI.
 
 ### Rollback
 

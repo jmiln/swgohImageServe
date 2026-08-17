@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+  pull_request:
+    branches: [master]
+
+# Least privilege by default; only `publish` widens this.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # The unit tests never launch Chromium, so skip Puppeteer's ~400MB browser download.
+      # The image job still gets a real Chrome, baked in by the Dockerfile.
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      # load: true puts the image in the runner's local daemon so it can be `docker run`.
+      # Without it buildx keeps the result in its cache and every assertion below fails
+      # with "no such image".
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: imageserve:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Fonts are functional here, not cosmetic: without them Chrome renders tofu boxes rather
+      # than failing, so a broken image would publish and pass its healthcheck while producing
+      # garbage. Checked directly rather than inferred from pixels.
+      - name: Font packages installed
+        run: docker run --rm imageserve:ci dpkg -s fonts-liberation fonts-noto-color-emoji >/dev/null
+
+      - name: Fontconfig can see fonts
+        run: test "$(docker run --rm imageserve:ci fc-list | wc -l)" -gt 0
+
+      - name: Start fake comlink
+        run: |
+          STUB_ICON_DIR=/tmp/ci-icons node test/fixtures/fake-comlink.mjs &
+          for i in $(seq 1 10); do
+            curl -fsS -X POST localhost:9999/metadata >/dev/null && break
+            sleep 1
+          done
+
+      # Read-only mount: runner files are uid 1001 and the container runs as uid 1000, so writes
+      # would fail regardless. `:ro` makes that an explicit contract rather than a latent surprise.
+      - name: Start container
+        run: |
+          docker run -d --name imageserve-ci --network host \
+            -e PORT=3699 \
+            -e COMLINK_CLIENT_URL=http://localhost:9999 \
+            -e ASSET_URL=http://localhost:9999 \
+            -e COMLINK_ACCESS_KEY=ci \
+            -e COMLINK_SECRET_KEY=ci \
+            -v /tmp/ci-icons:/app/public/CharIcons:ro \
+            imageserve:ci
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS localhost:3699/health | grep -q '"status":"ok"'; then
+              echo "healthy"; exit 0
+            fi
+            sleep 2
+          done
+          echo "never became healthy" >&2
+          docker logs imageserve-ci
+          exit 1
+
+      # charUrl's last segment must match the seeded fixture: checkImgOrDownload derives the cache
+      # filename from it, so this renders without attempting a download.
+      - name: Render a character
+        run: |
+          curl -fsS -X POST localhost:3699/char \
+            -H 'Content-Type: application/json' \
+            -d '{"charUrl":"http://x/tex.charui_test.png","defId":"T","rarity":7,"gear":13}' \
+            -o /tmp/out.png
+          file /tmp/out.png | grep -q 'PNG image data, 210 x 210'
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs imageserve-ci || true
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [check, image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/jmiln/swgohimageserve
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      # Reuses the layers the image job just built, via the shared gha cache.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha

@@ -10,8 +10,6 @@
         "lint:write": "biome check --write --no-errors-on-unmatched .",
         "test": "node --test test/**/*.test.ts",
         "changelog:draft": "scripts/changelog-draft.sh",
-        "release:image": "scripts/release-image.sh",
-        "release:push": "scripts/release-push.sh",
         "version": "git add CHANGELOG.md"
     },
     "author": "",

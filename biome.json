@@ -1,6 +1,12 @@
 {
     "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-    "assist": { "actions": { "source": { "organizeImports": "on" } } },
+    "assist": {
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
+    },
     "files": {
         "includes": ["**", "!cacheDir"]
     },
@@ -10,7 +16,7 @@
         "indentStyle": "space",
         "indentWidth": 4,
         "lineWidth": 140,
-        "includes": ["**", "!**/node_modules", "!scripts/**", "!languages/**", "!data/**", "!wipCommands/**", "!test/**"]
+        "includes": ["**", "!**/node_modules", "!test/**", "!**/*.svg"]
     },
     "javascript": {
         "formatter": {
@@ -25,9 +31,9 @@
     },
     "linter": {
         "enabled": true,
-        "includes": ["**", "!**/node_modules", "!scripts/**", "!languages/**", "!data/**", "!wipCommands/**", "!test/**"],
+        "includes": ["**", "!**/node_modules", "!test/**", "!**/*.svg"],
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
             "style": {
                 "noParameterAssign": "error",
                 "useAsConstAssertion": "error",

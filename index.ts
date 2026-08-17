@@ -7,6 +7,7 @@ import { env } from "./modules/config.ts";
 import { checkImgOrDownload } from "./modules/download.ts";
 import { createHealthHandler } from "./modules/health.ts";
 import logger from "./modules/logger.ts";
+import { createMetadataStore } from "./modules/metadata.ts";
 
 // Optimization args from https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
 const minimal_args = [
@@ -47,44 +48,13 @@ const minimal_args = [
     "--use-mock-keychain",
 ];
 
-interface MetaData {
-    assetVersion: string;
-    latestGamedataVersion: string;
-    latestLocalizationBundleVersion: string;
-}
-
-let metadataFile: MetaData;
-
 const comlinkStub = new ComlinkStub({
     url: env.COMLINK_CLIENT_URL,
     accessKey: env.COMLINK_ACCESS_KEY,
     secretKey: env.COMLINK_SECRET_KEY,
 });
-const META_FILE = new URL("./data/metadata.json", import.meta.url).pathname;
-const META_KEYS: (keyof MetaData)[] = ["assetVersion", "latestGamedataVersion", "latestLocalizationBundleVersion"];
 
-async function updateMetaData(): Promise<boolean> {
-    const meta = await comlinkStub.getMetaData();
-    let metaFile: Partial<MetaData> = {};
-    try {
-        metaFile = JSON.parse(await fs.readFile(META_FILE, "utf-8")) as Partial<MetaData>;
-    } catch {
-        // file doesn't exist yet
-    }
-    let isUpdated = false;
-    const metaOut = {} as MetaData;
-    for (const key of META_KEYS) {
-        if (meta[key] !== metaFile[key]) {
-            isUpdated = true;
-        }
-        metaOut[key] = meta[key];
-    }
-    if (isUpdated) {
-        await fs.writeFile(META_FILE, JSON.stringify(metaOut), { encoding: "utf8" });
-    }
-    metadataFile = metaOut;
-    return isUpdated;
-}
+const metadata = createMetadataStore(comlinkStub, logger);
 
 const toRelicLevel = (raw: number): number => Math.max(0, (raw || 0) - 2);
 const charDef = { defId: "", rarity: 1, level: 0, gear: 1, zetas: 0, relic: 0, side: "", omicron: 0 };
@@ -93,7 +63,7 @@ const assetUrl = env.ASSET_URL;
 const cachedUrl = async (rawUrl: string) =>
     `http://localhost:${env.PORT}/CharIcons/${await checkImgOrDownload(rawUrl, `${import.meta.dirname}/public/CharIcons`, {
         assetUrl,
-        assetVersion: metadataFile.assetVersion,
+        assetVersion: metadata.get().assetVersion,
     })}`;
 
 const MAX_UNITS = 200;
@@ -101,6 +71,7 @@ const MAX_UNITS = 200;
 const init = async () => {
     const cssContent = await fs.readFile(`${import.meta.dirname}/public/css/styles.css`, "utf-8");
     const chartJsContent = await fs.readFile(`${import.meta.dirname}/node_modules/chart.js/dist/chart.umd.js`, "utf-8");
+    const pkg = JSON.parse(await fs.readFile(`${import.meta.dirname}/package.json`, "utf-8")) as { version: string };
 
     const browser = await puppeteer.launch({
         headless: true,
@@ -128,12 +99,12 @@ const init = async () => {
     app.use(express.static(`${import.meta.dirname}/public`));
     app.get(
         "/health",
-        createHealthHandler(() => browser.connected),
+        createHealthHandler(() => browser.connected, pkg.version),
     );
-    await updateMetaData();
+    await metadata.refresh();
     const metaInterval = setInterval(
         () => {
-            updateMetaData().catch((err) => logger.error({ err }, "Metadata refresh failed"));
+            metadata.refresh().catch((err) => logger.error({ err }, "Metadata refresh failed"));
         },
         60 * 60 * 1000,
     );

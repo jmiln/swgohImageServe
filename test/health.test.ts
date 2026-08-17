@@ -20,28 +20,37 @@ const fakeRes = () => {
 };
 
 test("returns 200 and ok when the browser is connected", () => {
-    const handler = createHealthHandler(() => true);
+    const handler = createHealthHandler(() => true, "2.0.0");
     const { res, captured } = fakeRes();
 
     handler({} as Request, res);
 
     assert.equal(captured.statusCode, 200);
-    assert.deepEqual(captured.body, { status: "ok", browser: "connected" });
+    assert.deepEqual(captured.body, { status: "ok", browser: "connected", version: "2.0.0" });
 });
 
 test("returns 503 and degraded when the browser is disconnected", () => {
-    const handler = createHealthHandler(() => false);
+    const handler = createHealthHandler(() => false, "2.0.0");
     const { res, captured } = fakeRes();
 
     handler({} as Request, res);
 
     assert.equal(captured.statusCode, 503);
-    assert.deepEqual(captured.body, { status: "degraded", browser: "disconnected" });
+    assert.deepEqual(captured.body, { status: "degraded", browser: "disconnected", version: "2.0.0" });
+});
+
+test("reports whatever version it was given", () => {
+    const handler = createHealthHandler(() => true, "9.9.9-test");
+    const { res, captured } = fakeRes();
+
+    handler({} as Request, res);
+
+    assert.deepEqual(captured.body, { status: "ok", browser: "connected", version: "9.9.9-test" });
 });
 
 test("re-reads browser state on every call rather than capturing it once", () => {
     let connected = true;
-    const handler = createHealthHandler(() => connected);
+    const handler = createHealthHandler(() => connected, "2.0.0");
 
     const first = fakeRes();
     handler({} as Request, first.res);

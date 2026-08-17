@@ -8,7 +8,11 @@
         "start": "node --env-file=.env index.ts",
         "lint": "biome check --no-errors-on-unmatched .",
         "lint:write": "biome check --write --no-errors-on-unmatched .",
-        "test": "node --test test/**/*.test.ts"
+        "test": "node --test test/**/*.test.ts",
+        "changelog:draft": "scripts/changelog-draft.sh",
+        "release:image": "scripts/release-image.sh",
+        "release:push": "scripts/release-push.sh",
+        "version": "git add CHANGELOG.md"
     },
     "author": "",
     "license": "ISC",

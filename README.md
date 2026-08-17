@@ -131,8 +131,9 @@ to reach it. Drop the `ports:` block if every caller is a container on the same 
 | Path | Persisted | Why |
 |---|---|---|
 | `public/CharIcons/` | Bind mount, `ICON_DIR` | Hundreds of portraits; re-downloading them on every container recreate is wasteful |
-| `data/` | No | Holds only `metadata.json`, refetched from Comlink at startup |
 | `cacheDir/` | No | Chromium profile; caches nothing worth keeping, and a stale `SingletonLock` can block launch |
+
+Game metadata is held in memory only, refetched from Comlink at startup and hourly.
 
 The container runs as the non-root `node` user (uid 1000). Docker creates a missing bind-mount source
 as root, so if `ICON_DIR` points somewhere that does not exist yet, create it first or `chown` it to
@@ -147,14 +148,52 @@ docker build -t ghcr.io/jmiln/imageserve:latest .
 docker push ghcr.io/jmiln/imageserve:latest
 ```
 
+## Releasing
+
+Versions follow semver, with `package.json` as the source of truth and `npm version` creating the git
+tag. The changelog is written before the bump so it lands in the release commit.
+
+```bash
+npm run changelog:draft     # prints commits since the last tag, grouped by type
+# paste into CHANGELOG.md and edit into prose
+npm version minor           # bumps package.json, commits, tags v2.1.0
+npm run release:image       # builds :2.1.0 and :latest with OCI labels
+npm run release:push        # pushes both tags (needs `docker login ghcr.io`)
+```
+
+`release:image` refuses to run unless the working tree is clean and `HEAD` is exactly the tag matching
+`package.json`. A version tag is meant to be trustworthy, and an image labelled `2.1.0` built from
+something that is not 2.1.0 only causes damage later. Use `docker compose build` for local iteration
+instead.
+
+### Rollback
+
+```bash
+IMAGE_TAG=2.0.0 docker compose up -d
+```
+
+`IMAGE_TAG` defaults to `latest`. Set it in `.env` to pin a deployment.
+
+### Checking what is running
+
+```bash
+curl -s http://localhost:3600/health          # version the process loaded
+docker inspect ghcr.io/jmiln/imageserve:latest \
+  --format '{{index .Config.Labels "org.opencontainers.image.version"}}'   # version the image claims
+```
+
+These can disagree when a container is running a stale image, which is exactly the case worth
+catching.
+
 ## Endpoints
 
 Full request/response schemas for every endpoint are in [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
 
 ### GET /health
 
-Returns `200` with `{"status":"ok","browser":"connected"}` while Puppeteer is alive, and `503` with
-`{"status":"degraded","browser":"disconnected"}` if Chromium has died. Backs the compose healthcheck:
+Returns `200` with `{"status":"ok","browser":"connected","version":"2.0.0"}` while Puppeteer is alive,
+and `503` with `{"status":"degraded","browser":"disconnected","version":"2.0.0"}` if Chromium has
+died. `version` comes from `package.json`, read once at startup. Backs the compose healthcheck:
 Express keeps accepting connections after a browser crash, so a plain TCP check would call a
 non-rendering process healthy.
 

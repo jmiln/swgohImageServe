@@ -6,13 +6,16 @@ import type { Request, Response } from "express";
  * The browser state is injected as a callback rather than a boolean so the handler samples it on
  * every request. Express stays up when Chromium dies, so a cached value would report healthy for a
  * process that can no longer render anything.
+ *
+ * The version is a plain string: it cannot change without restarting the process.
  */
 export const createHealthHandler =
-    (isBrowserConnected: () => boolean) =>
+    (isBrowserConnected: () => boolean, version: string) =>
     (_req: Request, res: Response): void => {
         const connected = isBrowserConnected();
         res.status(connected ? 200 : 503).json({
             status: connected ? "ok" : "degraded",
             browser: connected ? "connected" : "disconnected",
+            version,
         });
     };

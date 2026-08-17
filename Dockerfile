@@ -42,15 +42,13 @@ RUN npm ci --omit=dev
 
 COPY . .
 
-# None of these three are in the build context, so they must be created, not just chowned.
-# data/ holds only metadata.json, which updateMetaData() rewrites at startup; shipping the committed
-# copy would bust this layer's cache hourly for a file that is immediately overwritten.
+# Neither of these is in the build context, so they must be created, not just chowned.
 # cacheDir is not volume-backed and puppeteer.launch() writes to it before app.listen() runs, so a
 # missing or root-owned directory is a boot failure rather than a degraded request.
 # CharIcons is normally bind-mounted, which masks this directory and takes the host's ownership.
 # It is created anyway so the image still runs standalone, without the mount.
-RUN mkdir -p /app/public/CharIcons /app/cacheDir /app/data \
-    && chown -R node:node /app/public/CharIcons /app/cacheDir /app/data
+RUN mkdir -p /app/public/CharIcons /app/cacheDir \
+    && chown -R node:node /app/public/CharIcons /app/cacheDir
 
 USER node
 

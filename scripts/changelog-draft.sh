@@ -26,11 +26,20 @@ print_group() {
     fi
 }
 
+# Every conventional-commit type this repo uses gets a group. Anything left over lands in
+# "Unclassified" rather than being silently dropped, so a badly-prefixed commit is visible.
 print_group feat Added
 print_group fix Fixed
+print_group perf Performance
+print_group refactor Refactoring
+print_group docs Documentation
+print_group ci CI
+print_group build Build
+print_group test Tests
 print_group chore Chores
 
-OTHER=$(git log --no-merges --pretty='%s' "${LAST_TAG}..HEAD" | grep -vE '^(feat|fix|chore)(\(.+\))?: ' || true)
+KNOWN='feat|fix|perf|refactor|docs|ci|build|test|chore'
+OTHER=$(git log --no-merges --pretty='%s' "${LAST_TAG}..HEAD" | grep -vE "^(${KNOWN})(\(.+\))?: " || true)
 if [ -n "$OTHER" ]; then
     echo "### Unclassified (no conventional prefix)"
     echo

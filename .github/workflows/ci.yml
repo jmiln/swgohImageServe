@@ -23,8 +23,8 @@ jobs:
       # The image job still gets a real Chrome, baked in by the Dockerfile.
       PUPPETEER_SKIP_DOWNLOAD: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -36,13 +36,13 @@ jobs:
   image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
 
       # load: true puts the image in the runner's local daemon so it can be `docker run`.
       # Without it buildx keeps the result in its cache and every assertion below fails
       # with "no such image".
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           load: true
@@ -114,17 +114,17 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/jmiln/swgohimageserve
           tags: |
@@ -132,7 +132,7 @@ jobs:
             type=raw,value=latest
 
       # Reuses the layers the image job just built, via the shared gha cache.
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           push: true

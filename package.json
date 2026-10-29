@@ -5,12 +5,17 @@
     "type": "module",
     "main": "index.ts",
     "scripts": {
+        "prepare": "husky",
+        "setup": "npm install && npm run prepare",
         "start": "node --env-file=.env index.ts",
         "lint": "biome check --no-errors-on-unmatched .",
         "lint:write": "biome check --write --no-errors-on-unmatched .",
         "test": "node --test test/**/*.test.ts",
         "changelog:draft": "scripts/changelog-draft.sh",
-        "version": "git add CHANGELOG.md"
+        "changelog:write": "scripts/changelog-draft.sh --write",
+        "changelog:release": "scripts/changelog-draft.sh --write --release",
+        "release": "npm version --ignore-scripts=false",
+        "version": "scripts/changelog-draft.sh --write --stage --release $npm_package_version"
     },
     "author": "",
     "license": "ISC",
